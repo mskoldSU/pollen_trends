@@ -1,0 +1,79 @@
+---
+title: "Pollentrender"
+author: "Martin Sköld"
+date: '2022-02-25'
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, dev.args = list(png = list(type = "cairo")))
+```
+
+
+Läs in hjälpfunktioner och data för samtliga arter
+```{r}
+library(tidyverse)
+library(ggridges)
+source("R/functions.R")
+species <- c("Alnus", "Betula", "Salix", "Ulmus", "Fraxinus", "Populus", 
+"Corylus", "Pinus", "Picea")
+pollen_data <- read_pollen(species, file = "data/Pollen Stockholm dayly values 1979-2019.xlsx")
+```
+
+Illustrera med kurvor
+```{r}
+ridge_plot(pollen_data, species)
+```
+
+fokus på en art
+```{r}
+ridge_plot(pollen_data, "Salix")
+```
+
+Illustrera med färger
+```{r}
+tile_plot(pollen_data, species)
+```
+
+fokus på en art
+```{r}
+tile_plot(pollen_data, "Pinus")
+```
+
+Det ser ut som säsongen (kanske främst "lågsäsongen") förlängts för flera arter. De första 9-10 åren ser ut att ha en relativt sen säsongsstart, vilket kan komma att slå igenom i trendanalyser. För att göra trendanalyser beräknar vi ett antal sammanfattande mått på säsong
+
+- Första dagen (`first_day`).
+- Högsäsongens start (första dag då fler än 10% av säsongens maxvärde registrerats) (`high_start`)
+- Dagen med mest pollen (`max_day`)
+- "Medeldagen" (medelvärdet av dag på året över samtliga pollenkorn) (`mean_day`).
+- "Mediandagen" (den dag upp till vilken hälften av säsongens pollen räknats) (`median_day`).
+- Säsongens längd (första till sista pollenkorn) (`season`)
+- Högsäsongens längd (antal dagar med fler än 10% av säsongens maxvärde) (`high_season`)
+
+Vi kan plotta dessa
+```{r}
+pollen_seasons <- season_summaries(pollen_data, species)
+measure <- c("first_day", "high_season", "high_start", "mean_day", "median_day", 
+"season")
+trend_plot(pollen_seasons, species, measure)
+```
+
+eller enskilda
+```{r}
+trend_plot(pollen_seasons, "Betula", c("high_start", "first_day"))
+```
+
+Slutligen en illustration av trender och tabell. Trenden avser årlig förändring i antal dagar, med ett P-värde mindre än det "magiska" 0.05 kan du kalla trenden "statistiskt signifkant" (på nivån 5%). 
+
+```{r}
+pollen_trends <- trend_table(pollen_seasons, species, measure)
+pollen_trends %>% ggplot(aes(x = species, y = trend)) + 
+  geom_col() + 
+  facet_wrap(~measure) + 
+  geom_hline(yintercept = 0, color = "red") +
+  coord_flip() +
+  theme_bw()
+knitr::kable(pollen_trends, digits = 2)
+```
+
+
