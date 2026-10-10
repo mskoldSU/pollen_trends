@@ -16,6 +16,8 @@ sample_data <- as.data.frame(
   check.names = FALSE
 )
 sample_data <- cbind(date = as.Date("2019-04-15"), sample_data)
+# The original workbook has a blank first-column header (readxl calls it ...1).
+names(sample_data)[1] <- ""
 sample_data[["2019"]] <- 7
 
 file <- tempfile(fileext = ".xlsx")
