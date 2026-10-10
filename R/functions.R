@@ -4,8 +4,8 @@ read_pollen <- function(species, years = 1979:2019, file = "data/Pollen Stockhol
 }
 
 read_sheet <- function(species, file = "data/Pollen Stockholm dayly values 1979-2019.xlsx"){
-  assertthat::assert_that(species %in% readxl::excel_sheets("data/Pollen Stockholm dayly values 1979-2019.xlsx"),
-                          msg = paste(species, "in not a sheet in ", file))
+  assertthat::assert_that(species %in% readxl::excel_sheets(file),
+                          msg = paste(species, "is not a sheet in", file))
   suppressMessages(readxl::read_excel(file, sheet = species)) %>% 
     mutate(day = lubridate::yday(...1)) %>% 
     select(day, `2019`:`1979`) %>% 
