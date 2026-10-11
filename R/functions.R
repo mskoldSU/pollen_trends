@@ -43,6 +43,7 @@ tile_plot <- function(data, species){
 
 season_summaries <- function(data, species){
   data %>% filter(value > 0) %>% 
+    arrange(species, year, day) %>% 
     group_by(year, species) %>% 
     summarise(first_day = min(day),
               high_start = min(day[value > max(value)/10]),
